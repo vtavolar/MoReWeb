@@ -29,7 +29,7 @@ class GeneralTestResult(object):
     nTotalChips = 16
 
     try:
-        MoReWebVersion = subprocess.check_output(["git", "describe"]) + " " + subprocess.check_output(["git", "describe -all"])
+        MoReWebVersion = subprocess.check_output(["git", "describe"]) + " " + subprocess.check_output(["git", "describe --all"])
     except:
         try:
             import commands
