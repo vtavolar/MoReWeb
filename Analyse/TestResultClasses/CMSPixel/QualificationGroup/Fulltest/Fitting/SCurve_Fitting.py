@@ -41,8 +41,7 @@ class SCurve_Fitting():
         return -1
 
     def InitFit(self):
-        self.scurveFit = ROOT.TF1("Fit","[0]*TMath::Erf([2] * (x-[1])) + [3]",0,.230)
-
+        self.scurveFit = ROOT.TF1("Fit","[0]*(1+TMath::Erf([2] * (x-[1])))",0,.230)
 
     def FitAllSCurve(self,dir,nRocs):
         print "Fitting SCurves %s"%dir
@@ -187,14 +186,17 @@ class SCurve_Fitting():
             return [[-3,chip,row,col],[]]
         graph = self.GetGraph(calibrationPoints)
 
-        self.scurveFit.SetParameters(self.nReadouts/2., graph.GetMean(), 167., self.nReadouts/2.)         #// half amplitude, threshold (50% point), width, offset
-        graph.Fit(self.scurveFit, "Q", "", 0.0, 0.3);
+        self.scurveFit.SetParameters(self.nReadouts/2., graph.GetMean(), 167.)         #// half amplitude, threshold (50% point), width, offset
+        self.scurveFit.SetParLimits(0, 0, self.nReadouts)
+        self.scurveFit.SetParLimits(1, 0.0, 0.3)
+        self.scurveFit.SetParLimits(2, 50, 800)
+        graph.Fit(self.scurveFit, "QBR", "", 0.0, 0.3);
 
         ndf = self.scurveFit.GetNDF()
         chi2 = self.scurveFit.GetChisquare() / ndf if ndf > 0 else 0
 
         notConverged = ("FAILED    " in ROOT.gMinuit.fCstatu) or (ROOT.gMinuit.fEDM > 1.e-4)    #//if fEDM very small, convergence failed only due to limited machine accuracy
-        fitFailed = notConverged or chi2> self.chiLimit
+        fitFailed = notConverged #or chi2> self.chiLimit
         thr = -1.
         sig = -1.
         if not fitFailed: #  if not failed

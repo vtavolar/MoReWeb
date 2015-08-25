@@ -29,9 +29,13 @@ class GeneralTestResult(object):
     nTotalChips = 16
 
     try:
-        MoReWebVersion = subprocess.check_output(["git", "describe"])
+        MoReWebVersion = subprocess.check_output(["git", "describe"]) + " " + subprocess.check_output(["git", "describe -all"])
     except:
-        MoReWebVersion = 'unknown MoReWeb version'
+        try:
+            import commands
+            MoReWebVersion = "%s %s"%(commands.getstatusoutput('git describe')[1],commands.getstatusoutput('git describe --all')[1])
+        except:
+            MoReWebVersion = 'unknown MoReWeb version'
 
     '''
         Initialization function
